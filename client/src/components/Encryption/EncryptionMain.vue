@@ -6,7 +6,7 @@
     </form>
 
     <div>
-      <span><router-link to="/secret" target="_blank">{{urlLink}}</router-link></span>
+      <span><router-link v-bind:to="`/secret/${urlPath}`" target="_blank">{{urlLink}}</router-link></span>
     </div>
   </div>
 </template>
@@ -16,12 +16,26 @@ export default {
   data() {
     return {
       content: "",
-      urlLink: ""
+      urlLink: "",
+      urlPath: "",
     }
   },
   methods: {
     generate() {
-      this.urlLink = "blabla",
+      const data = {
+        message: this.content
+      }
+      const message = fetch(`http://localhost:3000/api/secret`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }).then(res => res.json())
+          .then(res => {
+            this.urlPath = res.hash
+            this.urlLink = `${window.location.host}/${this.urlPath}`
+          })
       this.content = ""
     }
   },
