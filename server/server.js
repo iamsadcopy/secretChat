@@ -1,10 +1,16 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const messageRouter = require("./routes/messages.route");
+const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || "3000";
+const DB_NAME = process.env.DB_NAME || "messages";
+const DB_URL = process.env.DB_UL || `mongodb://localhost:27017/${DB_NAME}`;
 
 const app = express();
+app.use(express.json());
+app.use("/api/secret", messageRouter)
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -26,6 +32,20 @@ io.on("connection", (socket) => {
     })
 })
 
-server.listen(PORT, () => {
-    console.log(`Server start at port ${PORT}`)
+async function startApp() {
+    try {
+        await mongoose.connect(
+            DB_URL,
+            { useNewUrlParser: true},
+            { useUnifiedTopology: true}
+        );
+        server.listen(PORT, () => console.log(`Server start at port: ${PORT}`));
+    } catch(e) {
+        console.log(e);
+    }
+}
+
+startApp().then(() => {
+    console.log("App start")
 })
+.catch((e) => console.log(e));
